@@ -17,18 +17,21 @@ var DefaultOptions = Options{
 	RawPrint:    false,
 }
 
-func PrintAppStacks(app *fiber.App, options *Options) {
+func PrintAppStacks(app *fiber.App, options ...*Options) {
 
-	if options == nil {
-		options = &DefaultOptions
+	var opt Options
+	if len(options) > 0 {
+		opt = *options[0]
+	} else {
+		opt = DefaultOptions
 	}
 
 	stacks := lo.Flatten[*fiber.Route](app.Stack())
 
-	if options.PrintByPath {
+	if opt.PrintByPath {
 		printByPathStacks(stacks)
 	}
-	if options.RawPrint {
+	if opt.RawPrint {
 		printByJson(stacks)
 	}
 
