@@ -58,9 +58,12 @@ func printByPathStacks(stacks []*fiber.Route) {
 	paths := sortedKeys(byPathStacks)
 
 	for _, path := range paths {
-		color.HiYellow(path)
-		routes := byPathStacks[path]
+		color.HiMagenta(path)
+		routes := lo.UniqBy(byPathStacks[path], func(route *fiber.Route) string {
+			return route.Method
+		})
 		fmt.Print(" ➜")
+
 		for _, route := range routes {
 			params := getRouteParams(route)
 			method := route.Method
@@ -69,7 +72,9 @@ func printByPathStacks(stacks []*fiber.Route) {
 			switch method {
 			case "OPTIONS":
 				c = color.HiCyanString
-			case "GET", "POST", "PUT", "PATCH":
+			case "GET":
+				c = color.HiYellowString
+			case "POST", "PUT", "PATCH":
 				c = color.HiGreenString
 			case "DELETE":
 				c = color.HiRedString
