@@ -3,8 +3,10 @@ package frlog
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/gofiber/fiber/v2"
 	"github.com/samber/lo"
+	"sort"
 )
 
 type Options struct {
@@ -17,6 +19,7 @@ var DefaultOptions = Options{
 	RawPrint:    false,
 }
 
+// PrintAppStacks will print all routes
 func PrintAppStacks(app *fiber.App, options ...*Options) {
 
 	var opt Options
@@ -28,6 +31,7 @@ func PrintAppStacks(app *fiber.App, options ...*Options) {
 
 	stacks := lo.Flatten[*fiber.Route](app.Stack())
 
+	color.Blue("-- App Route Stacks (%d) --", len(stacks))
 	if opt.PrintByPath {
 		printByPathStacks(stacks)
 	}
@@ -51,18 +55,52 @@ func printByPathStacks(stacks []*fiber.Route) {
 	byPathStacks := lo.GroupBy(stacks, func(stack *fiber.Route) string {
 		return stack.Path
 	})
-	for path, stacks := range byPathStacks {
-		fmt.Println("--", path)
-		//var methods string
-		for _, stack := range stacks {
-			var params string
-			//methods += stack.Method + " "
-			if len(stack.Params) > 0 {
-				params = fmt.Sprintf("Params: %v", stack.Params)
+	paths, sortedByPathStacks := sortMapByKey(byPathStacks)
+
+	for _, path := range paths {
+		color.HiYellow(path)
+		routes := sortedByPathStacks[path]
+		fmt.Print(" ➜")
+		for _, route := range routes {
+			params := getRouteParams(route)
+			method := route.Method
+			c := color.WhiteString
+
+			switch method {
+			case "OPTIONS":
+				c = color.HiCyanString
+			case "GET", "POST", "PUT", "PATCH":
+				c = color.HiGreenString
+			case "DELETE":
+				c = color.HiRedString
+			default:
+				c = color.WhiteString
 			}
-			fmt.Print(fmt.Sprintf("     %s %s", stack.Method, params))
+			fmt.Print(c(" %s %s", method, params))
 		}
 		fmt.Println("")
-		//fmt.Println("  ", methods)
 	}
+}
+
+func getRouteParams(route *fiber.Route) string {
+	var params string
+	if len(route.Params) > 0 {
+		params = fmt.Sprintf("Params: %v", route.Params)
+	}
+	return params
+}
+
+func sortMapByKey(m map[string][]*fiber.Route) ([]string, map[string][]*fiber.Route) {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	sortedMap := make(map[string][]*fiber.Route)
+	for _, k := range keys {
+		sortedMap[k] = m[k]
+	}
+
+	return keys, sortedMap
 }
