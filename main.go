@@ -55,11 +55,11 @@ func printByPathStacks(stacks []*fiber.Route) {
 	byPathStacks := lo.GroupBy(stacks, func(stack *fiber.Route) string {
 		return stack.Path
 	})
-	paths, sortedByPathStacks := sortMapByKey(byPathStacks)
+	paths := sortedKeys(byPathStacks)
 
 	for _, path := range paths {
 		color.HiYellow(path)
-		routes := sortedByPathStacks[path]
+		routes := byPathStacks[path]
 		fmt.Print(" ➜")
 		for _, route := range routes {
 			params := getRouteParams(route)
@@ -90,17 +90,8 @@ func getRouteParams(route *fiber.Route) string {
 	return params
 }
 
-func sortMapByKey(m map[string][]*fiber.Route) ([]string, map[string][]*fiber.Route) {
-	var keys []string
-	for k := range m {
-		keys = append(keys, k)
-	}
+func sortedKeys(m map[string][]*fiber.Route) []string {
+	keys := lo.Keys(m)
 	sort.Strings(keys)
-
-	sortedMap := make(map[string][]*fiber.Route)
-	for _, k := range keys {
-		sortedMap[k] = m[k]
-	}
-
-	return keys, sortedMap
+	return keys
 }
