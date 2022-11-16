@@ -14,19 +14,19 @@ type Options struct {
 	RawPrint    bool
 }
 
-var DefaultOptions = Options{
+var defaultOptions = Options{
 	PrintByPath: true,
 	RawPrint:    false,
 }
 
 // PrintAppStacks will print all routes
-func PrintAppStacks(app *fiber.App, options ...*Options) {
+func PrintAppStacks(app *fiber.App, options ...Options) {
 
 	var opt Options
 	if len(options) > 0 {
-		opt = *options[0]
+		opt = options[0]
 	} else {
-		opt = DefaultOptions
+		opt = defaultOptions
 	}
 
 	stacks := lo.Flatten[*fiber.Route](app.Stack())
@@ -34,9 +34,10 @@ func PrintAppStacks(app *fiber.App, options ...*Options) {
 	color.Blue("-- App Route Stacks (%d) --", len(stacks))
 	if opt.PrintByPath {
 		printByPathStacks(stacks)
-	}
-	if opt.RawPrint {
+	} else if opt.RawPrint {
 		printByJson(stacks)
+	} else {
+		printByPathStacks(stacks)
 	}
 
 }
