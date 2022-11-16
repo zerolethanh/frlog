@@ -75,8 +75,12 @@ func printByPathStacks(stacks []*fiber.Route) {
 				c = color.HiCyanString
 			case "GET":
 				c = color.HiYellowString
-			case "POST", "PUT", "PATCH":
+			case "POST":
 				c = color.HiGreenString
+			case "PUT":
+				c = color.HiBlueString
+			case "PATCH":
+				c = color.HiCyanString
 			case "DELETE":
 				c = color.HiRedString
 			default:
@@ -91,7 +95,7 @@ func printByPathStacks(stacks []*fiber.Route) {
 func getRouteParams(route *fiber.Route) string {
 	var params string
 	if len(route.Params) > 0 {
-		params = fmt.Sprintf("Params: %v", route.Params)
+		params = fmt.Sprintf("params:%v", route.Params)
 	}
 	return params
 }

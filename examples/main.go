@@ -14,6 +14,9 @@ func main() {
 	app.Post("/login", func(c *fiber.Ctx) error {
 		return c.SendString("Login")
 	})
+	app.Put("/login/:uid", func(c *fiber.Ctx) error {
+		return c.SendString("Login")
+	})
 	app.Get("/user/:id", func(c *fiber.Ctx) error {
 		return c.SendString("User")
 	})
